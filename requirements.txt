@@ -1,0 +1,5 @@
+# 项目依赖包列表
+pandas
+lightgbm
+scikit-learn
+matplotlib
