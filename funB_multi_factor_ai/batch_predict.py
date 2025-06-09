@@ -1,18 +1,17 @@
 """
 batch_predict.py
 
-批量加载因子 CSV 文件并输出 LightGBM 模型预测建议。
+批量加载因子 CSV 文件并输出 LightGBM 模型预测建议（基于 LGBMClassifier）。
 """
 
 import pandas as pd
 import joblib
-import lightgbm as lgb
 import os
 from datetime import datetime
 
-def load_model(model_path="models/lightgbm_classifier.txt"):
+def load_model(model_path="models/lightgbm_classifier.pkl"):
     if not os.path.exists(model_path):
-        raise FileNotFoundError(f"模型文件不存在：{model_path}")
+        raise FileNotFoundError(f"❌ 模型文件不存在：{model_path}")
     model = joblib.load(model_path)
     return model
 
@@ -34,12 +33,12 @@ def predict_batch(input_csv: str, output_csv: str):
             df[col] = 0.0
     df_features = df[features]
 
-    # 预测
-    probs = model.predict(df_features)
+    # 使用 predict_proba 输出 P(1)
+    probs = model.predict_proba(df_features)[:, 1]
     labels = (probs >= 0.5).astype(int)
     suggestions = ["✅ 建议买入" if l == 1 else "❌ 不建议买入" for l in labels]
 
-    df["预测概率"] = probs
+    df["预测概率"] = probs.round(6)
     df["预测标签"] = labels
     df["建议"] = suggestions
 
