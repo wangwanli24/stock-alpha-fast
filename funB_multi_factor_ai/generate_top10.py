@@ -16,6 +16,8 @@ def find_latest_prediction_file(folder="datasets"):
 
 def generate_top10(input_path: str, output_path: str):
     df = pd.read_csv(input_path)
+    # ✅ 过滤掉科创板（688***.SH）和北证（*.BJ）股票，仅保留主板和创业板
+    df = df[df["ts_code"].str.match(r"^(000|001|002|300|600)\d{3}\.(SZ|SH)$")]
 
     # ====== 字段构建（避免缺失） ======
     df["预测概率"] = df["预测概率"] if "预测概率" in df.columns else 0.0
