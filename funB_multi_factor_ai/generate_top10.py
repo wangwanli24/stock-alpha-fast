@@ -16,6 +16,19 @@ def find_latest_prediction_file(folder="datasets"):
 
 def generate_top10(input_path: str, output_path: str):
     df = pd.read_csv(input_path)
+    # ✅ 加入 ST、退市、停牌过滤逻辑（此处插入）
+    import tushare as ts
+    ts.set_token("d6be033dbd2142b995c5d4b10b32f031a9f42ff8699f9f236f937b4f")
+    pro = ts.pro_api()
+    basic_info = pro.stock_basic(exchange='', list_status='L', fields='ts_code,name,list_status')
+    valid_stocks = basic_info[~basic_info['name'].str.contains('ST')]
+    valid_ts_codes = set(valid_stocks['ts_code'])
+    df = df[df['ts_code'].isin(valid_ts_codes)]
+    if 'volume' in df.columns:
+        df = df[df['volume'] > 0]
+    if 'latestPrice' in df.columns:
+        df = df[~df['latestPrice'].isin(['--'])]
+        df = df[df['latestPrice'].notna()]
     # ✅ 过滤掉科创板（688***.SH）和北证（*.BJ）股票，仅保留主板和创业板
     df = df[df["ts_code"].str.match(r"^(000|001|002|300|600)\d{3}\.(SZ|SH)$")]
 
