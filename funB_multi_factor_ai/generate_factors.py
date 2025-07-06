@@ -47,6 +47,7 @@ def calculate_factors(df: pd.DataFrame) -> pd.DataFrame:
     df['momentum_3'] = df['close'] - df['close'].shift(3)
     df['amount_ratio'] = df['amount'] / df['amount'].rolling(5).mean()
     df['green_days'] = (df['close'] > df['open']).rolling(5).sum() / 5
+    df['amount'] = df['amount']
 
     df.replace([np.inf, -np.inf], np.nan, inplace=True)
     df.dropna(inplace=True)
@@ -61,7 +62,7 @@ def calculate_factors(df: pd.DataFrame) -> pd.DataFrame:
         'ma_ratio_5_10', 'ma_ratio_5_20',
         'vol_ratio_5', 'high_low_range',
         'return_std_5', 'momentum_3',
-        'amount_ratio', 'green_days'
+        'amount_ratio', 'green_days', 'amount',
     ]
 
     return df[factor_cols].reset_index(drop=True)

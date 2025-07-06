@@ -22,6 +22,36 @@ def load_feature_names():
     features = [col for col in df.columns if col not in drop_cols]
     return features
 
+# ✅ 信心分映射函数（0-100 分级评分）
+def map_confidence(prob):
+    if prob >= 0.9:
+        return 100
+    elif prob >= 0.8:
+        return 90
+    elif prob >= 0.7:
+        return 80
+    elif prob >= 0.6:
+        return 70
+    elif prob >= 0.5:
+        return 60
+    elif prob >= 0.4:
+        return 40
+    elif prob >= 0.3:
+        return 20
+    else:
+        return 0
+
+# ✅ 建议标签函数（多级建议）
+def map_suggestion(prob):
+    if prob >= 0.85:
+        return "🔥 强烈建议买入"
+    elif prob >= 0.7:
+        return "✅ 建议买入"
+    elif prob >= 0.5:
+        return "☑️ 可考虑关注"
+    else:
+        return "❌ 不建议买入"
+
 def predict_batch(input_csv: str, output_csv: str):
     df = pd.read_csv(input_csv)
     model = load_model()
@@ -35,12 +65,12 @@ def predict_batch(input_csv: str, output_csv: str):
 
     # 使用 predict_proba 输出 P(1)
     probs = model.predict_proba(df_features)[:, 1]
-    labels = (probs >= 0.5).astype(int)
-    suggestions = ["✅ 建议买入" if l == 1 else "❌ 不建议买入" for l in labels]
-
     df["预测概率"] = probs.round(6)
-    df["预测标签"] = labels
-    df["建议"] = suggestions
+    df["模型信心分"] = df["预测概率"].apply(map_confidence)
+    df["建议"] = df["预测概率"].apply(map_suggestion)
+
+    # 保留原始预测标签（可选）
+    df["预测标签"] = (df["预测概率"] >= 0.5).astype(int)
 
     df.to_csv(output_csv, index=False)
     print(f"✅ 批量预测完成，结果已保存至：{output_csv}")

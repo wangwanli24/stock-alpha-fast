@@ -49,6 +49,8 @@ def generate_heatmap(csv_path: str, output_dir="top10_outputs", date_str=None):
     else:
         df["成交额强度 (0~100)"] = 0.0
 
+    df["成交额)"] = df["amount"] if "amount" in df.columns else 0.0
+
     # ========== 显示字段顺序 ==========
     fields_to_show = [
         "3日预测涨幅 (%)",
